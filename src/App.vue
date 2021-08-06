@@ -1,231 +1,166 @@
-<!-- <template>
-  <canvas
-    ref="canvas"
-    height="512"
-    width="512"
-    tabindex="0"
-    autofocus
-    @keydown="keyDown"
-    @keyup="keyUp"
-  />
-</template> -->
+<template>
+  <div style="display:flex; align-items:flex-start">
+    <canvas
+      ref="canvas"
+      height="512"
+      width="512"
+    />
+    <canvas
+      ref="canvas2"
+      height="512"
+      width="512"
+    />
+  </div>
+</template>
 
 <script>
-import {
-  h,
-  onMounted,
-  onUnmounted,
-  ref,
-  computed
-} from 'vue'
-
-/* const useMap = (layers) => {
-  const tileSize = 64
-  const colCount = 10
-  const rowCount = 10
-  const rect = reactive({
-    height: colCount * tileSize,
-    width: rowCount * tileSize
-  })
-  function tileAt (layerId, col, row) {
-    return layers[layerId][row * colCount + col]
-  }
-  /!* const tileAt = computed(() => {
-    return (layerId, col, row) => layers[layerId][row * colCount + col]
-  }) *!/
-  return {
-    rect,
-    tileAt
-  }
-}
-
-const useCamera = (map, settings) => {
-  const SPEED = 256
-  const position = reactive({
-    x: 0,
-    y: 0
-  })
-  const rect = reactive({
-    width: 0,
-    height: 0
-  })
-  const move = (deltaTime, deltaX, deltaY) => {
-    const maxX = map.rect.width - rect.width
-    const maxY = map.rect.height - rect.height
-
-    position.x += deltaX * SPEED * deltaTime
-    position.y += deltaY * SPEED * deltaTime
-
-    // prevent looking beyond the map
-    position.x = Math.max(0, Math.min(position.x, maxX))
-    position.y = Math.max(0, Math.min(position.y, maxY))
-  }
-  return {
-    move,
-    position,
-    rect
-  }
-}
-
-const useGame = () => {
-  const layers = { length: 1 }
-  const context = ref()
-  this.layerCanvas = Array.from(layers).map(function () {
-    return h('canvas', {
-      height: 512,
-      width: 512
-    })
-  })
-  const draw = () => {}
-  const fps = 60
-  const fpsInterval = 1000 / fps
-  let tref = ref()
-  let frame = -1
-  let timestamp = performance.now()
-  const tick = elapsed => {
-    if (timestamp === null) timestamp = elapsed
-    const seg = Math.floor((elapsed - timestamp) / fpsInterval)
-    if (seg > frame) {
-      frame = seg
-      draw()
-    }
-    tref = requestAnimationFrame(tick)
-  }
-  function start () {
-    requestAnimationFrame(tick)
-  }
-  onMounted(() => {
-    requestAnimationFrame(tick)
-    // context.value = this.layerCanvas[layer].getContext('2d')
-  })
-  return {
-  }
-} */
-
-/* class AnimationFrame {
-  constructor (animate, fps = 60) {
-    this.requestID = 0
-    this.fps = fps
-    this.animate = animate
-  }
-
-  start () {
-    let then = performance.now()
-    const interval = 1000 / this.fps
-
-    const animateLoop = (now) => {
-      this.requestID = requestAnimationFrame(animateLoop)
-      const delta = now - then
-
-      if (delta > interval) {
-        then = now - (delta % interval)
-        this.animate(delta)
-      }
-    }
-    this.requestID = requestAnimationFrame(animateLoop)
-  }
-
-  stop () {
-    cancelAnimationFrame(this.requestID)
-  }
-}
-
-new AnimationFrame() */
-
-const useGameTick = (view, fps = 60) => {
-  let then = 0
-  const requestId = ref(0)
-  const isPlaying = ref(false)
-  const interval = 1000 / fps
-  const tolerance = 0.1
-  const tick = now => {
-    if (now - tolerance > then + interval) {
-      then = now
-      // fps =  Math.floor(1 / ((now + interval) % then) * 1000)
-      view((now + interval) % then)
-    }
-    requestId.value = requestAnimationFrame(tick)
-  }
-  const start = () => {
-    isPlaying.value = true
-    requestId.value = requestAnimationFrame(tick)
-  }
-  const pause = () => {
-    if (isPlaying.value) {
-      cancelAnimationFrame(requestId.value)
-      isPlaying.value = false
-    }
-  }
-  const isPaused = computed(() => !isPlaying.value)
-  return {
-    start,
-    pause,
-    isPaused
-  }
-}
+/* eslint-disable no-unused-vars, camelcase */
+import { onMounted, ref } from 'vue'
+import SimplexNoise from 'simplex-noise'
+import Map from '@/core/Map/index-test.js'
 
 export default {
   name: 'App',
-  components: {},
   setup () {
-    const canvas = h('canvas', {
-      height: 512,
-      width: 512
-    })
-    const context = ref()
-    const draw = (ctx, layer, offsetX, offsetY) => {
-      ctx.clearRect(0, 0, 512, 512)
-      ctx.fillStyle = `hsl(${Math.floor(Math.random() * 10) * 36}, 70%, 80%)`
-      ctx.fillRect(0, 0, 20, 20)
-      ctx.fillStyle = '#000'
-      ctx.font = '16px Roboto'
-    }
-    const view = delta => {
-      draw(context.value, 0, 0, 0)
-    }
-    const { start, pause } = useGameTick(view, 10)
-    /* let then = 0
-    const requestId = ref(0)
-    const isPlaying = ref(false)
-    const interval = 1000 / 10
-    const tolerance = 0.1
-    const tick = now => {
-      if (now - tolerance > then + interval) {
-        then = now
-        // fps =  Math.floor(1 / ((now + interval) % then) * 1000)
-        view()
-      }
-      requestId.value = requestAnimationFrame(tick)
-    }
-    const start = () => {
-      isPlaying.value = true
-      requestId.value = requestAnimationFrame(tick)
-    }
-    const pause = () => {
-      if (isPlaying.value) {
-        cancelAnimationFrame(requestId.value)
-        isPlaying.value = false
-      }
-    } */
-    onMounted(() => {
-      context.value = canvas.el.getContext('2d')
-      view()
-      start()
-    })
-    onUnmounted(() => {
-      pause()
-    })
-    return () => [
-      canvas
-      /* h('button', {
-        onClick: start,
-        style: {
-          position: 'fixed',
-          right: '120px'
+    const canvas = ref()
+    const canvas2 = ref()
+    const tileSize = 8
+    const camera = { x: 0, y: 100 }
+    const map = new Map('queue', [512, 512])
+    map.init()
+    /* const draw = (canvas, map) => {
+      const { height: h, width: w } = canvas
+      const ctx = canvas.getContext('2d')
+      const rows = w / tileSize
+      const cols = h / tileSize
+      ctx.save()
+      const offsetX = camera.x
+      const offsetY = camera.y
+      for (let c = offsetY; c < cols + offsetY; c++) {
+        for (let r = offsetX; r < rows + offsetX; r++) {
+          const tile = map.tilemap.get(r, c)
+          const x = (r - offsetX) * tileSize
+          const y = (c - offsetY) * tileSize
+          ctx.strokeStyle = '#999'
+          ctx.strokeRect(x, y, tileSize, tileSize)
+          const colorMap = tile.water ? 'darkblue' : 'darkgreen'
+          ctx.fillStyle = colorMap
+          ctx.strokeStyle = colorMap
+          ctx.fillRect(x, y, tileSize, tileSize)
+          // elevation ------------------------
+          // ctx.fillStyle = 'white'
+          // ctx.textBaseline = 'middle'
+          // ctx.textAlign = 'center'
+          // const dist = (Math.floor((tile.distance || 0) * 25)).toString()
+          // ctx.fillText(dist, x + (tileSize / 2), y + (tileSize / 2))
+          // ----------------------------------
+          ctx.fill()
+          ctx.stroke()
         }
-      }, 'Start'),
-      h('button', { onClick: pause }, 'Stop') */
-    ]
+      }
+      ctx.fill()
+      ctx.restore()
+    }
+    const drawMap = (canvas, map) => {
+      const ctx = canvas.getContext('2d')
+      ctx.scale(2, 2)
+      for (let c = 0; c < map.h; c++) {
+        for (let r = 0; r < map.w; r++) {
+          const tile = map.tilemap.get(r, c)
+          const x = r
+          const y = c
+          ctx.fillStyle = tile.water ? '#0077be' : '#228b22'
+          // ------------
+          // ctx.fillStyle = tile.water ? '#455262'
+          //   : `hsl(${tile.distance * 36}, 80%, 70%)`
+          ctx.fillStyle = tile.water
+            ? `hsl(${25 * Math.floor(tile.distance * 4) / 4 * 3.6 + 240}, 50%, 50%)`
+            : `hsl(${3.6 * 25 * Math.floor(tile.distance * 4) / 4 + 60}, 70%, 50%)`
+          tile.getNeighborIds(map.tilemap).forEach((nId) => {
+            const neighbor = map.tilemap.find(nId)
+            const a = Math.floor(tile.distance * 4) / 4
+            const b = Math.floor(neighbor.distance * 4) / 4
+            if (a > b) {
+              // ctx.fillStyle = 'black'
+            }
+          })
+          ctx.fillStyle = tile.ocean ? `hsl(${25 * Math.floor(tile.distance * 4) / 4 * 3.6 + 280}, 50%, 50%)` : ''
+          // ctx.fillStyle = tile.coast ? 'black' : ''
+          // ------------
+          ctx.fillRect(x, y, 1, 1)
+          ctx.fill()
+          ctx.stroke()
+        }
+      }
+      ctx.strokeStyle = 'yellow'
+      ctx.strokeRect(
+        camera.x,
+        camera.y,
+        512 / tileSize,
+        512 / tileSize
+      )
+      ctx.stroke()
+    }
+    const map = new Map('hcqk1t6h51sdc')
+    map.create(SimplexNoise) */
+    const draw = () => {
+      const colorMap = tile => {
+        if (tile.water) { return '#045aa0' }
+        return 'darkred'
+      }
+      const ctx = canvas.value.getContext('2d')
+      const { height: h, width: w } = ctx.canvas
+      // const rows = w / tileSize
+      // const cols = h / tileSize
+      const offsetX = camera.x
+      const offsetY = camera.y
+      const row = { start: offsetX, end: offsetX + (w / tileSize) }
+      const col = { start: offsetY, end: offsetY + (h / tileSize) }
+      const id = ({ x, y }) => x + map.w * y
+      const c = map.grid.getAll().slice(
+        id({ x: row.start, y: col.start }),
+        id({ x: row.end, y: col.end })
+      )
+      for (const tile of c) {
+        const { x, y } = tile.site
+        const r = (x - offsetX) * tileSize
+        const c = (y - offsetY) * tileSize
+        ctx.fillStyle = colorMap(tile)
+        ctx.fillRect(r, c, tileSize, tileSize)
+        ctx.fill()
+      }
+    }
+    const drawMap = (canvas) => {
+      const colorMap = tile => {
+        if (tile.water) { return '#045aa0' }
+        return 'darkred'
+      }
+      const ctx = canvas.value.getContext('2d')
+      for (const tile of map.grid.getAll()) {
+        const { x, y } = tile.site
+        ctx.fillStyle = colorMap(tile)
+        ctx.fillRect(x, y, tileSize, tileSize)
+        ctx.fill()
+      }
+      ctx.strokeStyle = 'yellow'
+      ctx.strokeRect(
+        camera.x,
+        camera.y,
+        map.w / tileSize,
+        map.h / tileSize
+      )
+      ctx.stroke()
+    }
+    onMounted(() => {
+      /* deltas => {
+        let execTime = deltas.reduce((acc, curr) => acc + curr)
+        execTime = Math.floor(execTime / 1000 * 100) / 100
+        console.log(`${execTime.toString().padEnd(4, '0')}s`)
+      } */
+      draw(canvas)
+      drawMap(canvas2)
+    })
+    return { canvas, canvas2 }
   }
 }
 </script>
@@ -233,6 +168,9 @@ export default {
 <style lang="scss">
 * {
   box-sizing: border-box;
+}
+body {
+  background: #121212;
 }
 body, div {
   margin: 0;
@@ -245,5 +183,9 @@ body, div {
 }
 canvas {
   display: block;
+}
+.container {
+  width: 100%;
+  height: 100%;
 }
 </style>
